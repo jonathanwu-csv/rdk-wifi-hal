@@ -3760,7 +3760,7 @@ static int nl80211_nlmsg_read(struct nl_sock *sock, struct nl_cb *cb)
 {
     int ret;
     const int one_fd = 1;
-    const int timeout_ms = 1000;
+    const int timeout_ms = 2000;
     struct pollfd pfd = { .events = POLLIN };
 
     pfd.fd = nl_socket_get_fd(sock);

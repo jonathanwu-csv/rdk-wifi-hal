@@ -637,20 +637,28 @@ int platform_bss_up(int vap_index, bool up)
             wifi_hal_info_print("### %s: %s get bsscfg_idx failed, rc=%d ###\n", __func__, osifname, rc);
             return rc;
         }
-        rc = wl_iovar_getbuf(osifname, "bss", &idx, sizeof(idx), cmd, sizeof(cmd));
+        setbuf.bsscfg_idx = idx;
+        setbuf.enable = up;
+        rc = wl_iovar_getbuf(osifname, "bss", &setbuf, sizeof(setbuf), cmd, sizeof(cmd));
         if (rc) {
             wifi_hal_info_print("### %s: %s get bss failed, rc=%d ###\n", __func__, osifname, rc);
             return rc;
         }
-        isbssup = *(int *)cmd;
+        isbssup = (*(int *)cmd) ? TRUE : FALSE;
         if (isbssup != up) {
             wifi_hal_info_print("### %s: %s isbssup=%d up=%d ###\n", __func__, osifname, isbssup, up);
             setbuf.bsscfg_idx = idx;
-            setbuf.enable = up ? TRUE : FALSE;
+            setbuf.enable = up ? 1 : 0;
             rc = wl_iovar_set(osifname, "bss", &setbuf, sizeof(setbuf));
-            snprintf(cmd, sizeof(cmd), "wl_iovar bss %s", up ? "up" : "down"); /* For print */
-        } else
+            if (rc == 0) {
+                snprintf(cmd, sizeof(cmd), "wl_iovar bss %s", up ? "up" : "down"); /* For print */
+            } else {
+                snprintf(cmd, sizeof(cmd), "ifconfig %s %s", osifname, up ? "up" : "down");
+                system(cmd);
+            }
+        } else {
             snprintf(cmd, sizeof(cmd), "%s bssup=%d up=%d NOP", osifname, isbssup, up);
+        }
     }
     wifi_hal_info_print("### %s: cmd=[%s] rc=%d ###\n", __func__, cmd, rc);
     return rc;

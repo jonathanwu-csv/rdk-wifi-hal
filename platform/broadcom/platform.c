@@ -648,9 +648,16 @@ int platform_bss_up(int vap_index, bool up)
             setbuf.bsscfg_idx = idx;
             setbuf.enable = up ? TRUE : FALSE;
             rc = wl_iovar_set(osifname, "bss", &setbuf, sizeof(setbuf));
-            snprintf(cmd, sizeof(cmd), "wl_iovar bss %s", up ? "up" : "down"); /* For print */
-        } else
+            if (rc == 0) {
+                snprintf(cmd, sizeof(cmd), "wl_iovar bss %s", up ? "up" : "down"); /* For print */
+            } else {
+                wifi_hal_info_print("### %s: cmd=[%s] rc=%d ###\n", __func__, cmd, rc);
+                snprintf(cmd, sizeof(cmd), "wl -i %s bss %s", osifname, up ? "up" : "down");
+                v_secure_system(cmd);
+            }
+        } else {
             snprintf(cmd, sizeof(cmd), "%s bssup=%d up=%d NOP", osifname, isbssup, up);
+        }
     }
     wifi_hal_info_print("### %s: cmd=[%s] rc=%d ###\n", __func__, cmd, rc);
     return rc;

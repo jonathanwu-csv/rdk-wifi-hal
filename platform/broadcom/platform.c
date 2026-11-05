@@ -4578,11 +4578,13 @@ static void platform_get_radio_caps_2g(wifi_radio_info_t *radio, wifi_interface_
 #endif /* HOSTAPD_VERSION >= 211 */
 
 // XER-10 uses old kernel that does not support EHT cap NL parameters
-#if defined(SCXER10_PORT) && (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
+#if defined(SCXER10_PORT)
         iface->hw_features[i].eht_capab[IEEE80211_MODE_AP].eht_supported = true;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0))
         iface->hw_features[i].eht_capab[IEEE80211_MODE_AP].mac_cap = 0x0082;
         memcpy(iface->hw_features[i].eht_capab[IEEE80211_MODE_AP].phy_cap, eht_phy_cap,
             sizeof(eht_phy_cap));
+#endif
 #endif // SCXER10_PORT
 
 #if defined(TCXB7_PORT) || defined(TCXB8_PORT) || defined(XB10_PORT) || defined(SCXER10_PORT) || \
